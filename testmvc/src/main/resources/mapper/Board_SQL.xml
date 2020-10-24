@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board">
+	<select id="selectBoardList" parameterType="hashmap" resultType="hashmap"> 
+	<![CDATA[SELECT * FROM BOARD JOIN (SELECT BF_FILE_ID, LISTAGG(FILE_NAME,',') WITHIN GROUP(ORDER BY FILE_NAME) AS FILE_NAME FROM BOARD_FILE GROUP BY BF_FILE_ID) ON BOARD_ID=BF_FILE_ID WHERE PRODUCT_CATEGORY = #{boardTitle} ORDER BY ENROLL_DATE DESC]]>
+	</select>
+	<select id="getBoardCount" parameterType="hashmap" resultType="_int">
+	<![CDATA[SELECT COUNT(*) FROM BOARD WHERE PRODUCT_CATEGORY = #{boardTitle}]]>
+	</select>
+	<select id="boardPage" parameterType="hashmap" resultType="hashmap">
+	<![CDATA[SELECT BOARD.*,B.*,MEMBER_PICTURE FROM BOARD JOIN 
+	(SELECT BF_FILE_ID, LISTAGG(FILE_NAME,',') WITHIN GROUP(ORDER BY FILE_NAME) AS FILE_NAME FROM BOARD_FILE GROUP BY BF_FILE_ID) B 
+	ON BOARD_ID=BF_FILE_ID
+	JOIN MEMBER ON WRITER_USID = USID
+	WHERE BOARD_ID = #{boardId} AND WRITER_USID = #{writerUsid}]]>
+	</select>
+	<update id="updateReadCount" parameterType="hashmap">
+	<![CDATA[UPDATE BOARD SET HIT = HIT + 1 WHERE BOARD_ID = #{boardId}]]>
+	</update>
+	<select id="tradeUserList" parameterType="hashmap" resultType="_int">
+	<![CDATA[SELECT TRADE_USID FROM TRADE_LIST WHERE TRADE_BOARD_ID = #{boardId}]]>
+	</select>
+	<select id="likeCount" parameterType="hashmap" resultType="_int">
+	<![CDATA[SELECT COUNT(*) FROM TRADE_LIST WHERE TRADE_BOARD_ID =  #{boardId}]]>
+	</select>
+	<select id="paidUsersList" parameterType="hashmap" resultType="_int">
+	<![CDATA[SELECT TRADE_USID FROM TRADE_LIST WHERE TRADE_BOARD_ID = #{boardId} AND PAY_STATUS = 1]]>
+	</select>
+	<select id="deliveryUsersList" parameterType="hashmap" resultType="_int">
+	<![CDATA[SELECT TRADE_USID FROM TRADE_LIST WHERE TRADE_BOARD_ID = #{boardId} AND DELIVERY_STATUS = 1]]>
+	</select>
+		<select id="likeList" parameterType="hashmap" resultType="_int">
+	<![CDATA[SELECT * FROM LIKE_LIST WHERE LIKE_BOARD_ID = #{boardId} AND LIKE_USID = #{usid}]]>
+	</select>
+		<select id="commentList" parameterType="_int" resultType="com.cms.model.vo.Comment">
+	<![CDATA[SELECT * FROM "COMMENT" WHERE CBOARD_ID = #{boardId} START WITH COM_LAYER = 1 CONNECT BY PRIOR COM_ID = COM_REF]]>
+	</select>
+</mapper>
